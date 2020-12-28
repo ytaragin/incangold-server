@@ -1,5 +1,5 @@
 {
-  "app": "node bin/incangold-server-cdk.js",
+  "app": "node infra/incangold-server-cdk.js",
   "context": {
     "@aws-cdk/core:enableStackNameDuplicates": "true",
     "aws-cdk:enableDiffNoFail": "true",

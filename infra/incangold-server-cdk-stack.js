@@ -52,6 +52,7 @@ class IncangoldServerCdkStack extends cdk.Stack {
       apiName: serviceName,
       corsPreflight: {
         allowOrigins: ['*'],
+        allowMethods: ['*']
       }
     });
 
@@ -125,7 +126,7 @@ class IncangoldServerCdkStack extends cdk.Stack {
         },
         name: 'games_get',
         path: '/games',
-        methods: [HttpMethod.GET],
+        methods: [HttpMethod.GET, HttpMethod.OPTIONS],
         tables: [table]
       });
       this.createGWLambda(httpapi, {

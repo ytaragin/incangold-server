@@ -103,7 +103,10 @@ exports.addplayer = async(event, context) => {
 
 
     let ret = {
-        statusCode: 200
+        statusCode: 200,        
+        headers: {
+            "Access-Control-Allow-Origin": "*"
+        },
     }
 
     try {

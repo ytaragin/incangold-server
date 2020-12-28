@@ -1,8 +1,11 @@
 node_modules
+builddir
+.webpack
 
 # CDK asset staging directory
 .cdk.staging
 cdk.out
+.cache
 
 # Parcel default cache directory
 .parcel-cache

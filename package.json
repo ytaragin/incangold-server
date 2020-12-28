@@ -2,7 +2,7 @@
   "name": "incangold-server-cdk",
   "version": "0.1.0",
   "bin": {
-    "incangold-server-cdk": "bin/incangold-server-cdk.js"
+    "incangold-server-cdk": "infra/incangold-server-cdk.js"
   },
   "scripts": {
     "build": "echo \"The build step is not required when using JavaScript!\" && exit 0",
@@ -11,10 +11,36 @@
   },
   "devDependencies": {
     "@aws-cdk/assert": "1.70.0",
-    "aws-cdk": "1.70.0",
-    "jest": "^26.4.2"
+    "@redneckz/slice-node-modules": "0.0.7",
+    "aws-cdk": "^1.74.0",
+    "builtin-modules": "^3.1.0",
+    "jest": "^26.4.2",
+    "rimraf": "^3.0.2",
+    "webpack": "^5.4.0",
+    "webpack-cli": "^4.2.0"
   },
   "dependencies": {
-    "@aws-cdk/core": "1.70.0"
+    "@aws-cdk/aws-apigateway": "^1.70.0",
+    "@aws-cdk/aws-apigatewayv2": "^1.71.0",
+    "@aws-cdk/aws-dynamodb": "^1.70.0",
+    "@aws-cdk/aws-lambda": "^1.70.0",
+    "@aws-cdk/aws-lambda-nodejs": "^1.71.0",
+    "@aws-cdk/core": "1.70.0",
+    "@aws-solutions-constructs/aws-apigateway-lambda": "^1.70.0",
+    "aws-sdk": "^2.786.0",
+    "lodash": "^4.17.20"
+  },
+  "targets": {
+    "cdk-lambda": {
+      "context": "node",
+      "includeNodeModules": {
+        "aws-sdk": false
+      },
+      "sourceMap": false,
+      "minify": false,
+      "engines": {
+        "node": ">= 12"
+      }
+    }
   }
 }
