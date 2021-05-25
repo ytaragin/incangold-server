@@ -97,7 +97,7 @@ exports.addplayer = async(event, context) => {
         });
     }
 
-    console.log(`Adding player ${body.player} to : ${gameID} `);
+    console.log(`Adding player ${JSON.stringify(body.player)} to : ${gameID} `);
 
     const GL = new GM.GameManager({tableName:process.env.GAMES_TABLE, docClient:new AWS.DynamoDB.DocumentClient()})
 

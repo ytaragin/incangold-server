@@ -4,11 +4,16 @@ const lambda = require( '@aws-cdk/aws-lambda');
 const apigw = require( '@aws-cdk/aws-apigateway');
 const dynamodb = require('@aws-cdk/aws-dynamodb');
 
+const iam = require('@aws-cdk/aws-iam');
+
 const apigatewayv2 = require('@aws-cdk/aws-apigatewayv2');
+const apigatewayv2int = require('@aws-cdk/aws-apigatewayv2-integrations');
 const HttpApi =  apigatewayv2.HttpApi;
 const HttpMethod = apigatewayv2.HttpMethod;
-const LambdaProxyIntegration = apigatewayv2.LambdaProxyIntegration;
-
+const WebSocketApi = apigatewayv2.WebSocketApi;
+const WebSocketStage = apigatewayv2.WebSocketStage;
+const LambdaProxyIntegration = apigatewayv2int.LambdaProxyIntegration;
+const LambdaWebSocketIntegration = apigatewayv2int.LambdaWebSocketIntegration;
 
 
 
@@ -75,7 +80,76 @@ class IncangoldServerCdkStack extends cdk.Stack {
       projectionType: dynamodb.ProjectionType.ALL
     });
 
+    const connect_handler = this.createlambdaFunctionHandler({
+      name:`ConnectHandler`, 
+      lambdaFunctionProps: {
+        handler: 'handlers/conn.onConnect'
+      },
+      tables: [table]
+    });
 
+    const disconnect_handler = this.createlambdaFunctionHandler({
+      name:`DisonnectHandler`, 
+      lambdaFunctionProps: {
+        handler: 'handlers/conn.onDisconnect'
+      },
+      tables: [table]
+    });
+
+    const webSocketApi = new WebSocketApi(this, 'MsgWebsocketApi', {
+      connectRouteOptions: { integration: new LambdaWebSocketIntegration({ handler: connect_handler }) },
+      disconnectRouteOptions: { integration: new LambdaWebSocketIntegration({ handler: disconnect_handler }) },
+    });
+
+    const apiStage = new WebSocketStage(this, 'DevStage', {
+      webSocketApi,
+      stageName: 'dev',
+      autoDeploy: true,
+    });
+
+    const send_handler = this.createlambdaFunctionHandler({
+      name:`SendMsgHandler`, 
+      lambdaFunctionProps: {
+        handler: 'handlers/conn.sendMessage'
+      },
+      tables: [table]
+    });
+
+    webSocketApi.addRoute('sendMessage', {
+      integration: new LambdaWebSocketIntegration({
+        handler: send_handler,
+      }),
+    });
+
+    
+
+    const connectionsArns = this.formatArn({
+      service: 'execute-api',
+      resourceName: `${apiStage.stageName}/POST/*`,
+      resource: webSocketApi.apiId,
+    });
+    
+    send_handler.addToRolePolicy(
+      new iam.PolicyStatement({ actions: ['execute-api:ManageConnections'], resources: [connectionsArns] })
+    );
+
+  createlambdaFunctionHandler({name, lambdaFunctionProps, tables}) {
+
+    let lambdaprops = {
+      ...this.defaultLambdaProps, 
+      ...lambdaFunctionProps,
+    };
+
+    const new_handler = new lambda.Function(this, name, lambdaprops);
+
+
+    if (tables !== undefined) {
+      tables.forEach(table => {
+        table.grantReadWriteData(new_handler);
+      });
+    }
+
+    return new_handler;
 
   }
 
@@ -187,12 +261,14 @@ class IncangoldServerCdkStack extends cdk.Stack {
   
 
   createGWLambda(httpapi, def) {
+    //const new_handler = this.createlambdaFunctionHandler(def);
+
     let lambdaprops = {
       ...this.defaultLambdaProps, 
       ...def.lambdaFunctionProps,
     };
 
-//      const new_handler = new lambdanode.NodejsFunction(this, `${def.name}Handler`, lambdaprops);
+   //   const new_handler = new lambdanode.NodejsFunction(this, `${def.name}Handler`, lambdaprops);
     const new_handler = new lambda.Function(this, `${def.name}Handler`, lambdaprops);
 
     const new_integration = new LambdaProxyIntegration({
