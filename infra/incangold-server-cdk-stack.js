@@ -132,6 +132,7 @@ class IncangoldServerCdkStack extends cdk.Stack {
     send_handler.addToRolePolicy(
       new iam.PolicyStatement({ actions: ['execute-api:ManageConnections'], resources: [connectionsArns] })
     );
+  }
 
   createlambdaFunctionHandler({name, lambdaFunctionProps, tables}) {
 
